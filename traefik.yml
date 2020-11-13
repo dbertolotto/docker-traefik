@@ -1,0 +1,37 @@
+# entry points configuration
+entryPoints:
+  # redirect HTTP to HTTPS
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: "websecure"
+          scheme: "https"
+  # secure entry point
+  websecure:
+    address: ":443"
+
+# monitoring API
+api:
+  dashboard: true
+
+# TLS via Let's Encrypt
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      # email defined via variable TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL
+      #email: "your_user@your_domain"
+      storage: "/acme.json"
+      tlsChallenge:
+
+providers:
+  docker:
+    # configure Traefik to work with Docker
+    watch: true
+    # this is the same network as in the composer file
+    network: "web"
+  file: 
+    # enable dynamic configuration
+    filename: "/traefik-dynamic.yml"
+

@@ -1,0 +1,19 @@
+# Basic auth configuration
+http:
+  middlewares:
+  #  traefikAuth:
+  #    basicAuth:
+  #      users:
+  #        - $TRAEFIK_AUTH
+  routers:
+  #  api:
+  #    # Traefik API router configuration
+  #    rule: "Host(`$TRAEFIK_DOM`)"
+  #    entrypoints:
+  #      - "websecure"
+  #    middlewares:
+  #      - "traefikAuth"
+  #    service: "api@internal"
+  #    tls:
+  #      certResolver: "letsencrypt"
+

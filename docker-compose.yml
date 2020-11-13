@@ -1,0 +1,100 @@
+version: '3'
+
+networks:
+
+  web:
+    external: true
+  internal:
+    external: false
+
+services:
+
+  traefik:
+    image: "traefik:${TRAEFIK_VER}"
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.api.rule=Host(`${TRAEFIK_DOM}`)"
+      - traefik.http.routers.api.tls=true
+      - traefik.http.routers.api.tls.certresolver=letsencrypt
+      - traefik.http.routers.api.service=api@internal
+      - traefik.http.routers.api.middlewares=traefikAuth
+      - traefik.http.routers.api.entrypoints=websecure
+      - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_DOM}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - traefik.http.routers.dashboard.tls=true
+      - traefik.http.routers.dashboard.tls.certresolver=letsencrypt
+      - traefik.http.routers.dashboard.service=api@internal
+      - traefik.http.routers.dashboard.middlewares=traefikAuth
+      - traefik.http.routers.dashboard.entrypoints=websecure
+      #- traefik.port=8080
+      # Declaring the user list
+      #
+      # Note: when used in docker-compose.yml all dollar signs in the hash need to be doubled for escaping.
+      # To create user:password pair, it's possible to use this command:
+      # echo $(htpasswd -nbB -C 15 user password) | sed -e s/\\$/\\$\\$/g
+      #
+      # Also note that dollar signs should NOT be doubled when they not evaluated (e.g. Ansible docker_container module).
+      - "traefik.http.middlewares.traefikAuth.basicauth.users=${TRAEFIK_AUTH}"
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - web
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Traefik configuration files
+      - /docker/traefik/traefik.yml:/traefik.yml
+      #- /docker/traefik/traefik-dynamic.yml:/traefik-dynamic.yml
+      - /docker/traefik/acme.json:/acme.json
+          
+  mysql:
+    image: "mysql:${MYSQL_VER}"
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER:
+      MYSQL_PASSWORD:
+      MYSQL_ROOT_PASSWORD:
+    networks:
+      - internal
+    labels:
+      - traefik.enable=false
+
+  wordpress:
+    image: "wordpress:${WORDPRESS_VER}"
+    restart: unless-stopped
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_USER:
+      WORDPRESS_DB_PASSWORD:
+      WORDPRESS_DB_NAME: wordpress
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.wordpress.rule=Host(`${WORDPRESS_DOM}`)"
+      - traefik.http.routers.wordpress.tls=true
+      - traefik.http.routers.wordpress.tls.certresolver=letsencrypt
+      - traefik.port=80
+    networks:
+      - internal
+      - web
+    depends_on:
+      - traefik
+      - mysql
+
+  adminer:
+    image: "adminer:${ADMINER_VER}"
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.adminer.rule=Host(`${ADMINER_DOM}`)"
+      - traefik.http.routers.adminer.tls=true
+      - traefik.http.routers.adminer.tls.certresolver=letsencrypt
+      - traefik.port=8080
+    networks:
+      - internal
+      - web
+    depends_on:
+      - traefik
+      - mysql
+
