@@ -46,28 +46,27 @@ services:
       # Traefik configuration files
       - /docker/traefik/traefik.yml:/traefik.yml
       #- /docker/traefik/traefik-dynamic.yml:/traefik-dynamic.yml
-      - /docker/traefik/acme.json:/acme.json
           
-  mysql:
+  db:
     image: "mysql:${MYSQL_VER}"
     restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER:
-      MYSQL_PASSWORD:
-      MYSQL_ROOT_PASSWORD:
-    networks:
-      - internal
     labels:
       - traefik.enable=false
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+    networks:
+      - internal
 
   wordpress:
     image: "wordpress:${WORDPRESS_VER}"
     restart: unless-stopped
     environment:
-      WORDPRESS_DB_HOST: mysql
-      WORDPRESS_DB_USER:
-      WORDPRESS_DB_PASSWORD:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: "${WORDPRESS_DB_USER}"
+      WORDPRESS_DB_PASSWORD: "${WORDPRESS_DB_PASSWORD}"
       WORDPRESS_DB_NAME: wordpress
     labels:
       - traefik.enable=true
@@ -79,7 +78,6 @@ services:
       - internal
       - web
     depends_on:
-      - traefik
       - mysql
 
   adminer:
@@ -95,6 +93,5 @@ services:
       - internal
       - web
     depends_on:
-      - traefik
       - mysql
 

@@ -23,7 +23,7 @@ certificatesResolvers:
       # email defined via variable TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL
       #email: "your_user@your_domain"
       storage: "/acme.json"
-      tlsChallenge:
+      tlsChallenge: {}
 
 providers:
   docker:
@@ -31,7 +31,7 @@ providers:
     watch: true
     # this is the same network as in the composer file
     network: "web"
-  file: 
-    # enable dynamic configuration
-    filename: "/traefik-dynamic.yml"
+    #  file: 
+    #    # enable dynamic configuration
+    #    filename: "/traefik-dynamic.yml"
 
