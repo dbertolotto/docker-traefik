@@ -46,7 +46,7 @@ services:
       - /docker/traefik/traefik.yml:/traefik.yml
       #- /docker/traefik/traefik-dynamic.yml:/traefik-dynamic.yml
           
-  mysqldb:
+  mysql:
     image: "mysql:${MYSQL_VER}"
     restart: unless-stopped
     # improve resource usage
@@ -79,10 +79,10 @@ services:
       - internal
       - web
     depends_on:
-      - mysqldb
+      - mysql
 
   adminer:
-    image: "adminer:${ADMINER_VER}"
+    image: "adminer:${ADMINER_VER}-standalone"
     restart: unless-stopped
     labels:
       - traefik.enable=true
@@ -94,5 +94,5 @@ services:
       - internal
       - web
     depends_on:
-      - mysqldb
+      - mysql
 

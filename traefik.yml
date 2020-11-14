@@ -22,6 +22,10 @@ certificatesResolvers:
     acme:
       # email defined via variable TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL
       #email: "your_user@your_domain"
+      # real server
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      # staging server
+      #caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
       storage: "/acme.json"
       tlsChallenge: {}
 
