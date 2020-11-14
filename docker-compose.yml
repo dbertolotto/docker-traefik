@@ -3,9 +3,8 @@ version: '3'
 networks:
 
   web:
-    external: true
   internal:
-    external: false
+    internal: true
 
 services:
 
@@ -47,9 +46,11 @@ services:
       - /docker/traefik/traefik.yml:/traefik.yml
       #- /docker/traefik/traefik-dynamic.yml:/traefik-dynamic.yml
           
-  db:
+  mysqldb:
     image: "mysql:${MYSQL_VER}"
     restart: unless-stopped
+    # improve resource usage
+    command: --performance-schema=0 --show-compatibility-56=1
     labels:
       - traefik.enable=false
     environment:
@@ -64,7 +65,7 @@ services:
     image: "wordpress:${WORDPRESS_VER}"
     restart: unless-stopped
     environment:
-      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_HOST: mysqldb
       WORDPRESS_DB_USER: "${WORDPRESS_DB_USER}"
       WORDPRESS_DB_PASSWORD: "${WORDPRESS_DB_PASSWORD}"
       WORDPRESS_DB_NAME: wordpress
@@ -78,7 +79,7 @@ services:
       - internal
       - web
     depends_on:
-      - mysql
+      - mysqldb
 
   adminer:
     image: "adminer:${ADMINER_VER}"
@@ -93,5 +94,5 @@ services:
       - internal
       - web
     depends_on:
-      - mysql
+      - mysqldb
 
